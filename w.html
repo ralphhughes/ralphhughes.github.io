@@ -1,0 +1,220 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        <title>Rain Map</title>
+        <style>
+            #container {
+                position: absolute;
+                display: block;
+                width: 320px;
+                height: 500px;
+                border: 1px solid black;
+                top: 0px;
+                left: 0px;
+            }
+            #tile00_0, #tile01_0 {
+                width: 256px;
+                height: 256px;
+                padding: 0px;
+                margin: 0px;
+                border: 0px;
+            }
+             #tile00_1, #tile01_1 {
+                width: 256px;
+                height: 256px;
+                padding: 0px;
+                margin: 0px;
+                border: 0px;
+            }
+            .legendText {
+                font-size: small;
+            }
+            .legend {
+                list-style-type: none;
+                margin-left: 8px;
+                margin-right: 8px;
+                margin-top: 0px;
+                margin-bottom: 0px;
+                padding: 0px;
+                position: fixed; 
+                top: 425px;
+                width: 310px;
+                
+            }
+            .legend li {
+                display: inline-block;
+                width: 5em;
+                border: 1px solid #000;
+                display: inline-block;
+                float: left;
+                min-height: 14px;
+                letter-spacing: -1px;
+                margin: 0px 0.3em 0.2em 0px;
+                position: relative;
+                list-style-type: none;
+                font-size: 0.875em;
+                line-height: 1.1;
+            }
+            .r01 {
+                background: #0404FB none repeat scroll 0% 0%;
+                color: #FFF;
+            }
+            .r02 {
+                background: #3366FC none repeat scroll 0% 0%;
+            }
+            .r03 {
+                background: #808003 none repeat scroll 0% 0%;
+            }
+            .r04 {
+                background: #FBCA04 none repeat scroll 0% 0%;
+            }
+            .r05 {
+                background: #FC9804 none repeat scroll 0% 0%;
+            }
+            .ro6 {
+                background: #FB0404 none repeat scroll 0% 0%;
+            }
+            .r07 {
+                background: #FB04FC none repeat scroll 0% 0%;
+            }
+            .r08 {
+                background: #E2FCFC none repeat scroll 0% 0%;
+            }
+        </style>
+        <script>
+            var hourOffset = 0;
+            
+            
+            // get current date in UTC and turn it into the nearest metoffice datestamp format (on the hour?)
+            function getDateStr() {
+                var d = new Date();
+                var month = "0" + (d.getUTCMonth()+1);
+                var day = "0" + d.getUTCDate();
+                var hours = "0" + d.getUTCHours();
+                return d.getUTCFullYear() + "-" + month.substr(month.length-2) + "-" + day.substr(day.length-2) + "T" + hours.substr(hours.length-2) + ":00:00Z";
+            }
+    
+            // update the background images of the rain tile layer (tile00_0 and tile01_0)
+            function updateRainMap(hourOffset) {
+                var dateStr = getDateStr();
+                
+                var objTile0 = document.getElementById('tile00_0');
+                //objTile0.style.backgroundImage="url(" + getTileURL(250,165,dateStr,hourOffset) + ")";
+                objTile0.src=getTileURL(250,165,dateStr,hourOffset);
+                //objTile0.onerror=imageNotFound;
+
+                var objTile1 = document.getElementById('tile01_0');
+                //objTile1.style.backgroundImage="url(" + getTileURL(250,166,dateStr,hourOffset) + ")";
+                objTile1.src=getTileURL(250,166,dateStr,hourOffset);
+                
+                // UI tweaks
+                var objDescription = document.getElementById("description");
+                objDescription.innerHTML = getFriendlyDate(hourOffset) + '<br/><span class="legendText">Rainfall (mm/hr):</span>';
+                
+                var objEarlierButton = document.getElementById('earlierButton');
+                objEarlierButton.value = '<\nE\nA\nR\nL\nI\nE\nR\n<';
+                var objLaterButton = document.getElementById('laterButton');
+                objLaterButton.value = '>\nL\nA\nT\nE\nR\n>';
+            
+            }
+            function imageNotFound() {
+                alert("Image not found, try later for new forecast");
+            }
+            function getFriendlyDate(hourOffset) {
+                var weekday = new Array(7);
+                weekday[0]=  "Sunday";
+                weekday[1] = "Monday";
+                weekday[2] = "Tuesday";
+                weekday[3] = "Wednesday";
+                weekday[4] = "Thursday";
+                weekday[5] = "Friday";
+                weekday[6] = "Saturday";
+                
+                var now = new Date();
+                var hours = "0" + ((now.getHours() + hourOffset) % 24);
+                var dayInt = now.getDay();
+                if ((now.getHours() + hourOffset) > 24) {
+                    dayInt++;
+                    dayInt = dayInt % 7;
+                }
+                return weekday[dayInt] + " " + hours.substr(hours.length-2) + ":00";
+                
+            }
+            function getTileURL(x, y, dateStr, hourOffset) {
+                return "http://www.metoffice.gov.uk/public/data/LayerCache/UKPPNOW/ItemBbox/Precipitation_Rate/" + x + "/" + y + "/9/png?RUN=" + dateStr + "&FORECAST=%2B" + hourOffset + "&styles=Bitmap+Blue-Pale+blue+gradient+0.01+to+greater+than+32mm%2Fhr";
+            }
+            function earlierForecast() {
+                if (hourOffset > 0) {
+                    hourOffset = hourOffset - 1;
+                }
+                updateRainMap(hourOffset);
+            }
+            function laterForecast() {
+                if (hourOffset < 6) {
+                    hourOffset = hourOffset + 1;
+                }
+                updateRainMap(hourOffset);
+            }
+        </script>
+    </head>
+    <body onload="updateRainMap(0);">
+        <div id="container">
+            <input id="earlierButton" type="button" value="&lt;" onclick="earlierForecast();" style="position: fixed; top: 0px; left: 0px; width: 32px; height: 384px;">
+            <!-- rain layer -->
+            <img id="tile00_0" style="position: absolute; top: -128px; left: 32px;" onerror="imageNotFound">
+            <img id="tile01_0" style="position: absolute; top: 128px; left: 32px;">
+            
+            <!-- coastline -->
+            <div id="tile00_1" style="position: absolute; top: -128px; left: 32px; background-image: url('http://www.metoffice.gov.uk/public/tiles/coast_new/9/250/165.png');"></div>
+            <div id="tile01_1" style="position: absolute; top: 128px; left: 32px; background-image: url('images/166_composite.png');"></div>
+            <input id="laterButton" type="button" value="&gt;" onclick="laterForecast();" style="position: fixed; top: 0px; left: 288px; width: 32px; height: 384px;">
+            <div id="description" style="position: fixed; top: 384px; left: 0px;"></div>            
+            <ul class="legend">
+                <li class="r01"><em>0.01 - 0.5</em></li>
+                <li class="r02"><em>0.5 - 1</em></li>
+                <li class="r03"><em>1 - 2</em></li>
+                <li class="r04"><em>2 - 4</em></li>
+                <li class="r05"><em>4 - 8</em></li>
+                <li class="r06"><em>8 - 16</em></li>
+                <li class="r07"><em>16 - 32</em></li>
+                <li class="r08"><em>› 32</em></li>
+            </ul>
+        </div>
+    </body>
+</html>
+<?php
+/*
+ * Metoffice rain map
+------------------
+My phone display: 320 x 480 pixels (~165 ppi pixel density)
+
+Tiles are 256x256 pixels
+
+[Placenames]
+Conwy Valley - http://www.metoffice.gov.uk/public/tiles/placenames_new/9/250/166.png
+Great Orme -   http://www.metoffice.gov.uk/public/tiles/placenames_new/9/250/165.png
+
+[Topographic]
+Conwy Valley - http://www.metoffice.gov.uk/public/tiles/terrain/9/250/166.png
+Great Orme -   http://www.metoffice.gov.uk/public/tiles/terrain/9/250/165.png
+
+[Rain]
+Conwy Valley - http://www.metoffice.gov.uk/public/data/LayerCache/UKPPNOW/ItemBbox/Precipitation_Rate/250/166/9/png?RUN=2015-05-19T15:00:00Z&FORECAST=%2B1&styles=Bitmap+Blue-Pale+blue+gradient+0.01+to+greater+than+32mm%2Fhr
+Great Orme -   http://www.metoffice.gov.uk/public/data/LayerCache/UKPPNOW/ItemBbox/Precipitation_Rate/250/165/9/png?RUN=2015-05-19T15:00:00Z&FORECAST=%2B1&styles=Bitmap+Blue-Pale+blue+gradient+0.01+to+greater+than+32mm%2Fhr
+
+[Coastline]
+http://www.metoffice.gov.uk/public/tiles/regions/9/250/166.png  
+ 
+[Land-Sea]
+http://www.metoffice.gov.uk/public/tiles/map_new/9/250/166.png
+
+Whole north wales tile layout:
+248/165	249/165	250/165	251/165	252/165
+248/166	249/166	250/166	251/166	252/166
+248/167	249/167	250/167	251/167	252/167
+
+ */
+
