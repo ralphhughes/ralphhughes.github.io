@@ -161,6 +161,16 @@
                 var objLaterButton = document.getElementById('laterButton');
                 objLaterButton.value = '>\nL\nA\nT\nE\nR\n>';
             
+                if (hourOffset === 0) {
+                    objEarlierButton.disabled = true;
+                    objLaterButton.disabled = false;
+                } else if (hourOffset === 6) {
+                    objEarlierButton.disabled = false;
+                    objLaterButton.disabled = true;
+                } else {
+                    objEarlierButton.disabled = false;
+                    objLaterButton.disabled = false;
+                }
             }
             function imageNotFound() {
                 alert("Image not found, try later for new forecast");
