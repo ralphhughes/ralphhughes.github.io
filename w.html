@@ -91,12 +91,28 @@
             // get current date in UTC and turn it into the nearest metoffice datestamp format (on the hour?)
             function getDateStr() {
                 var d = new Date();
+                d = dateAdd(d, 'minute', 15) // Because metoffice weather seems to update approx 15 minutes after the hour
                 var month = "0" + (d.getUTCMonth()+1);
                 var day = "0" + d.getUTCDate();
                 var hours = "0" + d.getUTCHours();
                 return d.getUTCFullYear() + "-" + month.substr(month.length-2) + "-" + day.substr(day.length-2) + "T" + hours.substr(hours.length-2) + ":00:00Z";
             }
     
+            function dateAdd(date, interval, units) {
+                var ret = new Date(date); //don't change original date
+                switch(interval.toLowerCase()) {
+                    case 'year'   :  ret.setFullYear(ret.getFullYear() + units);  break;
+                    case 'quarter':  ret.setMonth(ret.getMonth() + 3*units);  break;
+                    case 'month'  :  ret.setMonth(ret.getMonth() + units);  break;
+                    case 'week'   :  ret.setDate(ret.getDate() + 7*units);  break;
+                    case 'day'    :  ret.setDate(ret.getDate() + units);  break;
+                    case 'hour'   :  ret.setTime(ret.getTime() + units*3600000);  break;
+                    case 'minute' :  ret.setTime(ret.getTime() + units*60000);  break;
+                    case 'second' :  ret.setTime(ret.getTime() + units*1000);  break;
+                    default       :  ret = undefined;  break;
+                }
+                return ret;
+            }
             // update the background images of the rain tile layer (tile00_0 and tile01_0)
             function updateRainMap(hourOffset) {
                 var dateStr = getDateStr();

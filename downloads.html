@@ -1,17 +1,11 @@
-<?php
 
-require_once 'includes/Templater.php';
-
-$page = new Templater("templates/main.tpl.php");    // Loading the template file
-$page->title = "Downloads";
-$page->head = "
     <style type=\"text/css\">
         .firstCol {
             width: 25%;
         }
     </style>
-    ";
-$page->set("body", "
+
+    
 	<h1>Downloads</h1>
         <h2>Visual Basic</h2>
         <p>I made these when I was a teenager, they are undocumented and error checking is minimal. I have 
@@ -124,6 +118,3 @@ $page->set("body", "
         <p>Link to my github will be here</p>
         <h2>Other</h2>
         </div>
-	");
-/* Outputting the data to the end user */
-$page->publish();
