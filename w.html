@@ -91,7 +91,7 @@
             // get current date in UTC and turn it into the nearest metoffice datestamp format (on the hour?)
             function getDateStr() {
                 var d = new Date();
-                d = dateAdd(d, 'minute', 15); // Because metoffice weather seems to update approx 15 minutes after the hour
+                d = dateAdd(d, 'minute', -15); // Because metoffice weather seems to update approx 15 minutes after the hour
                 var month = "0" + (d.getUTCMonth()+1);
                 var day = "0" + d.getUTCDate();
                 var hours = "0" + d.getUTCHours();
