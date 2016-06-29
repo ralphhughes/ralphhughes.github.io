@@ -6,6 +6,10 @@
         <meta charset="utf-8">
         <title>Rain Map</title>
         <style>
+            body {
+                padding: 0px;
+                margin: 0px;
+            }
             #container {
                 position: absolute;
                 display: block;
@@ -90,8 +94,8 @@
             
             // get current date in UTC and turn it into the nearest metoffice datestamp format (on the hour?)
             function getDateStr() {
-                var d = new Date();
-                d = dateAdd(d, 'minute', -15); // Because metoffice weather seems to update approx 15 minutes after the hour
+                var timeNow = new Date();
+                var d = dateAdd(timeNow, 'minute', -15); // Because metoffice weather seems to update approx 15 minutes after the hour
                 var month = "0" + (d.getUTCMonth()+1);
                 var day = "0" + d.getUTCDate();
                 var hours = "0" + d.getUTCHours();
@@ -201,10 +205,9 @@
         </div>
     </body>
 </html>
-<?php
+<!--
 /*
  * Metoffice rain map
-------------------
 My phone display: 320 x 480 pixels (~165 ppi pixel density)
 
 Tiles are 256x256 pixels
@@ -232,5 +235,5 @@ Whole north wales tile layout:
 248/166	249/166	250/166	251/166	252/166
 248/167	249/167	250/167	251/167	252/167
 
- */
+-->
 
