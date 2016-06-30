@@ -4,6 +4,7 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta charset="utf-8">
+        <!-- favicon config for different mobile devices -->
         <link rel="apple-touch-icon" sizes="57x57" href="/rain/apple-touch-icon-57x57.png">
         <link rel="apple-touch-icon" sizes="60x60" href="/rain/apple-touch-icon-60x60.png">
         <link rel="apple-touch-icon" sizes="72x72" href="/rain/apple-touch-icon-72x72.png">
@@ -26,6 +27,8 @@
         <meta name="msapplication-TileImage" content="/rain/mstile-144x144.png">
         <meta name="msapplication-config" content="/rain/browserconfig.xml">
         <meta name="theme-color" content="#ffffff">
+        <!-- end favicon config -->
+        
         <title>Ralph's Rain Map</title>
         <style>
             body {
@@ -55,6 +58,24 @@
                 margin: 0px;
                 border: 0px;
             }
+            #earlierButton {
+                white-space: pre;
+                word-wrap: break-word;
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                width: 32px;
+                height: 384px;   
+            }
+            #laterButton {
+                white-space: pre;
+                word-wrap: break-word;
+                position: fixed;
+                top: 0px;
+                left: 288px;
+                width: 32px;
+                height: 384px;
+            }
             .legendText {
                 font-size: small;
             }
@@ -68,7 +89,6 @@
                 position: fixed; 
                 top: 425px;
                 width: 310px;
-                
             }
             .legend li {
                 display: inline-block;
@@ -84,37 +104,21 @@
                 font-size: 0.875em;
                 line-height: 1.1;
             }
-            .r01 {
-                background: #0000FE none repeat scroll 0% 0%;
-                color: #FFF;
-            }
-            .r02 {
-                background: #3265FE none repeat scroll 0% 0%;
-            }
-            .r03 {
-                background: #7F7F00 none repeat scroll 0% 0%;
-            }
-            .r04 {
-                background: #FBCB00 none repeat scroll 0% 0%;
-            }
-            .r05 {
-                background: #FC9800 none repeat scroll 0% 0%;
-            }
-            .r06 {
-                background: #FE0000 none repeat scroll 0% 0%;
-            }
-            .r07 {
-                background: #FE00FE none repeat scroll 0% 0%;
-            }
-            .r08 {
-                background: #E5FEFE none repeat scroll 0% 0%;
-            }
+            .r01 { background: #0000FE none repeat scroll 0% 0%; color: #FFF; }
+            .r02 { background: #3265FE none repeat scroll 0% 0%; }
+            .r03 { background: #7F7F00 none repeat scroll 0% 0%; }
+            .r04 { background: #FBCB00 none repeat scroll 0% 0%; }
+            .r05 { background: #FC9800 none repeat scroll 0% 0%; }
+            .r06 { background: #FE0000 none repeat scroll 0% 0%; }
+            .r07 { background: #FE00FE none repeat scroll 0% 0%; }
+            .r08 { background: #E5FEFE none repeat scroll 0% 0%; }
         </style>
         <script>
+            // Default to prediction for now when page loads
             var hourOffset = 0;
             
             
-            // get current date in UTC and turn it into the nearest metoffice datestamp format (on the hour?)
+            // get current date in UTC and turn it into the nearest metoffice datestamp format
             function getDateStr() {
                 var timeNow = new Date();
                 var d = dateAdd(timeNow, 'minute', -15); // Because metoffice weather seems to update approx 15 minutes after the hour
@@ -139,6 +143,26 @@
                 }
                 return ret;
             }
+            
+            function isChrome() {
+                var isChromium = window.chrome,
+                    winNav = window.navigator,
+                    vendorName = winNav.vendor,
+                    isOpera = winNav.userAgent.indexOf("OPR") > -1,
+                    isIEedge = winNav.userAgent.indexOf("Edge") > -1,
+                    isIOSChrome = winNav.userAgent.match("CriOS");
+
+                if(isIOSChrome){
+                   // is Google Chrome on IOS
+                   return true;
+                } else if(isChromium !== null && isChromium !== undefined && vendorName === "Google Inc." && isOpera == false && isIEedge == false) {
+                   // is Google Chrome
+                   return true;
+                } else { 
+                   // not Google Chrome 
+                   return false;
+                }
+            }
             // update the background images of the rain tile layer (tile00_0 and tile01_0)
             function updateRainMap(hourOffset) {
                 var dateStr = getDateStr();
@@ -157,9 +181,17 @@
                 objDescription.innerHTML = getFriendlyDate(hourOffset) + '<br/><span class="legendText">Rainfall (mm/hr):</span>';
                 
                 var objEarlierButton = document.getElementById('earlierButton');
-                objEarlierButton.value = '<\nE\nA\nR\nL\nI\nE\nR\n<';
                 var objLaterButton = document.getElementById('laterButton');
-                objLaterButton.value = '>\nL\nA\nT\nE\nR\n>';
+                
+                if (!isChrome()) {
+                    objEarlierButton.value = '<\nE\nA\nR\nL\nI\nE\nR\n<';
+                    objLaterButton.value = '>\nL\nA\nT\nE\nR\n>';
+                } else {
+                    objEarlierButton.value = "<";
+                    objLaterButton.value = ">";
+                }
+            
+            
             
                 if (hourOffset === 0) {
                     objEarlierButton.disabled = true;
@@ -214,7 +246,9 @@
     </head>
     <body onload="updateRainMap(0);">
         <div id="container">
-            <input id="earlierButton" type="button" value="&lt;" onclick="earlierForecast();" style="position: fixed; top: 0px; left: 0px; width: 32px; height: 384px;">
+            
+            <input id="earlierButton" type="button" value="&lt;" onclick="earlierForecast();">
+            
             <!-- rain layer -->
             <img id="tile00_0" style="position: absolute; top: -128px; left: 32px;" onerror="imageNotFound">
             <img id="tile01_0" style="position: absolute; top: 128px; left: 32px;">
@@ -222,7 +256,9 @@
             <!-- coastline -->
             <div id="tile00_1" style="position: absolute; top: -128px; left: 32px; background-image: url('http://www.metoffice.gov.uk/public/tiles/coast_new/9/250/165.png');"></div>
             <div id="tile01_1" style="position: absolute; top: 128px; left: 32px; background-image: url('../images/166_composite.png');"></div>
-            <input id="laterButton" type="button" value="&gt;" onclick="laterForecast();" style="position: fixed; top: 0px; left: 288px; width: 32px; height: 384px;">
+            
+            <input id="laterButton" type="button" value="&gt;" onclick="laterForecast();">
+            
             <div id="description" style="position: fixed; top: 384px; left: 0px;"></div>            
             <ul class="legend">
                 <li class="r01"><em>0.01 - 0.5</em></li>
@@ -232,7 +268,7 @@
                 <li class="r05"><em>4 - 8</em></li>
                 <li class="r06"><em>8 - 16</em></li>
                 <li class="r07"><em>16 - 32</em></li>
-                <li class="r08"><em>› 32</em></li>
+                <li class="r08"><em>&nbsp;&gt; 32</em></li>
             </ul>
         </div>
     </body>
