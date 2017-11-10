@@ -41,6 +41,11 @@
                 // Display the hours and minutes correctly
                 $('#timeNow').val(timeNow[0] + ":" + timeNow[1]);
 
+                // Find div id switch
+                // child div of above
+                // find the two child spans of above
+                // remove "ui-btn-active" class from both 
+                $('#switch div span').removeClass("ui-btn-active");
             });
 
             // Turns 1220 into "20:20 today"
@@ -72,6 +77,9 @@
                 return mins;
             }
         </script>
+        <style>
+            .switch .ui-slider-switch { width: 10em }
+        </style>
     </head>
     <body>
         <div data-role="page">
@@ -85,10 +93,10 @@
                     <h3>Washing machine delay start</h3>
                     <form id="form1">
                         <label for="endTime">Intended cycle finish time </label>
-                        <div id="switch">
+                        <div class="switch" id="switch">
                             <select name="offset" id="offset" data-role="slider">
-                                <option value="00:00">Today</option>
-                                <option value="24:00">Tomorrow</option>
+                                <option value="00:00"> Today </option>
+                                <option value="24:00"> Tomorrow </option>
                             </select>
                         </div>
                         at
@@ -105,7 +113,8 @@
                     </form>
 
                 </div>
-                <div data-role="popup" id="popupBasic">
+                <div data-role="popup" class="ui-content" id="popupBasic">
+                    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
                     <p><span id="delay"></span></p>
                 </div>
 
