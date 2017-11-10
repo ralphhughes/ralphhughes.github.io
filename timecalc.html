@@ -9,9 +9,12 @@
         <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
         <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
         <script>
-            function calculateStartTime() {
+            $("#form1").submit(function(e) {
+                alert("hello");
+                return false;
+
                 
-            }
+            });
         </script>
     </head>
     <body>
@@ -22,18 +25,28 @@
             </div><!-- /header -->
 
             <div role="main" class="ui-content">
+                <div class="ui-body ui-body-a ui-corner-all">
+                    <h3>Washing machine delay start</h3>
+                    <form id="form1" onsubmit="calculateDelay();">
+                        <label for="endTime">Intended cycle finish time:</label>
+                        <input data-clear-btn="false" name="endTime" id="endTime" value="" type="time">
 
-<form>
-    <label for="time1">Time: data-clear-btn="false"</label>
-    <input data-clear-btn="false" name="time1" id="time1" value="" type="time">
-    
-    
-                <p>Washing machine delay start<br/>
-                    
+                        <label for="cycleTime">Washing cycle machine duration:</label>
+                        <input data-clear-btn="false" name="cycleTime" id="cycleTime" type="text" value="2 hours 50 min"/>
 
-                Intended finishing time: <input type="text"/><br/>
-                Washing machine duration: <input type="text" value="2 hours 50 min"/><br></p>
-                <button data-role="none">Button</button>
+                        <label for="timeNow">Time now:</label>
+                        <input disabled="disabled" name="timeNow" id="timeNow" value="" type="text">
+                        
+                        <button data-role="none">Calculate</button>
+
+                        <label for="delay">Delay:</label>
+                        <input disabled="disabled" name="delay" id="delay" value="0 hours" type="text">
+                        
+                    </form>
+
+                </div>
+
+
             </div><!-- /content -->
 
             <div data-role="footer">
