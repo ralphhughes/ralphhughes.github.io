@@ -9,12 +9,68 @@
         <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
         <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
         <script>
-            $("#form1").submit(function(e) {
-                alert("hello");
-                return false;
+            $(document).ready(function () { // DOM is ready so add my event handlers
+                $("#btnCalculate").click(function (e) {
+                    // Read inputs
+                    var strOffset = $('#offset').val();
+                    var strEndTime = $('#endTime').val();
+                    var strCycleTime = $('#cycleTime').val();
+                    var strTimeNow = $('#timeNow').val();
 
-                
+                    // Find ideal number of minutes delay
+                    var endTime = timeStrToMins(strEndTime) + timeStrToMins(strOffset);
+                    var cycleStartTime = endTime - timeStrToMins(strCycleTime);
+                    var delay = cycleStartTime - timeStrToMins(strTimeNow);
+                    console.log('Ideal delay: ' + delay + ' minutes.');
+                    
+                    // Machine won't delay an exact number of mins so show results with nearest integer hours
+                    var hourLow = Math.floor(delay / 60);
+                    var hourHigh = Math.ceil(delay / 60);
+                    
+                    var endTimeLow = timeStrToMins(strTimeNow) + (hourLow * 60) + timeStrToMins(strCycleTime);
+                    var endTimeHigh = timeStrToMins(strTimeNow) + (hourHigh * 60) + timeStrToMins(strCycleTime);
+                    $('#delay').html(hourLow + " hour delay will mean machine finishes at " + intMinsToTimeStr(endTimeLow) + ".<br/>" 
+                            + hourHigh + " hour delay will mean machine finishes at " + intMinsToTimeStr(endTimeHigh) + ".");
+                });
             });
+
+            $(window).load(function () { // Page is fully loaded
+                // Creates array containing current hours, minutes and seconds with leading zeroes
+                var timeNow = new Date().toTimeString().split(' ')[0].split(':');
+
+                // Display the hours and minutes correctly
+                $('#timeNow').val(timeNow[0] + ":" + timeNow[1]);
+
+            });
+
+            // Turns 1220 into "20:20 today"
+            // Turns 1712 into "04:32 tomorrow"
+            function intMinsToTimeStr(mins) {
+                var hours = Math.floor(mins / 60);
+                var mins = mins % 60;
+                if (mins < 10) {
+                    mins = "0" + mins;
+                }
+                var day;
+                if (hours > 23) {
+                    hours = hours - 24;
+                    day = " tomorrow";
+                } else {
+                    day = " today";
+                }
+                if (hours < 10) {
+                    return "0" + hours + ":" + mins + day;
+                } else {
+                    return hours + ":" + mins + day;
+                }
+            }
+
+            // Turns "02:45" into 165 (integer)
+            function timeStrToMins(strTime) {
+                var a = strTime.split(':');
+                var mins = (+a[0]) * 60 + (+a[1]);
+                return mins;
+            }
         </script>
     </head>
     <body>
@@ -27,25 +83,31 @@
             <div role="main" class="ui-content">
                 <div class="ui-body ui-body-a ui-corner-all">
                     <h3>Washing machine delay start</h3>
-                    <form id="form1" onsubmit="calculateDelay();">
-                        <label for="endTime">Intended cycle finish time:</label>
-                        <input data-clear-btn="false" name="endTime" id="endTime" value="" type="time">
+                    <form id="form1">
+                        <label for="endTime">Intended cycle finish time </label>
+                        <div id="switch">
+                            <select name="offset" id="offset" data-role="slider">
+                                <option value="00:00">Today</option>
+                                <option value="24:00">Tomorrow</option>
+                            </select>
+                        </div>
+                        at
+                        <input data-clear-btn="false" name="endTime" id="endTime" value="17:00" type="time">
 
                         <label for="cycleTime">Washing cycle machine duration:</label>
-                        <input data-clear-btn="false" name="cycleTime" id="cycleTime" type="text" value="2 hours 50 min"/>
+                        <input data-clear-btn="false" name="cycleTime" id="cycleTime" value="02:50" type="time"/>
 
                         <label for="timeNow">Time now:</label>
                         <input disabled="disabled" name="timeNow" id="timeNow" value="" type="text">
-                        
-                        <button data-role="none">Calculate</button>
 
-                        <label for="delay">Delay:</label>
-                        <input disabled="disabled" name="delay" id="delay" value="0 hours" type="text">
-                        
+                        <a id="btnCalculate" href="#popupBasic" data-rel="popup" class="ui-btn ui-corner-all ui-shadow ui-btn-inline" data-transition="pop">Calculate</a>
+
                     </form>
 
                 </div>
-
+                <div data-role="popup" id="popupBasic">
+                    <p><span id="delay"></span></p>
+                </div>
 
             </div><!-- /content -->
 
