@@ -11,6 +11,8 @@
         <script>
             $(document).ready(function () { // DOM is ready so add my event handlers
                 $("#btnCalculate").click(function (e) {
+                    updateTimeNow();
+                    
                     // Read inputs
                     var strOffset = $('#offset').val();
                     var strEndTime = $('#endTime').val();
@@ -35,11 +37,7 @@
             });
 
             $(window).load(function () { // Page is fully loaded
-                // Creates array containing current hours, minutes and seconds with leading zeroes
-                var timeNow = new Date().toTimeString().split(' ')[0].split(':');
-
-                // Display the hours and minutes correctly
-                $('#timeNow').val(timeNow[0] + ":" + timeNow[1]);
+                updateTimeNow();
 
                 // Find div id switch
                 // child div of above
@@ -47,7 +45,14 @@
                 // remove "ui-btn-active" class from both 
                 $('#switch div span').removeClass("ui-btn-active");
             });
+            
+            function updateTimeNow() {
+                // Creates array containing current hours, minutes and seconds with leading zeroes
+                var timeNow = new Date().toTimeString().split(' ')[0].split(':');
 
+                // Display the hours and minutes correctly
+                $('#timeNow').val(timeNow[0] + ":" + timeNow[1]);
+            }
             // Turns 1220 into "20:20 today"
             // Turns 1712 into "04:32 tomorrow"
             function intMinsToTimeStr(mins) {
