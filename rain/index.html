@@ -40,9 +40,9 @@
                 display: block;
                 width: 320px;
                 height: 500px;
-                border: 1px solid black;
+                /* border: 1px solid black; */
                 top: 0px;
-                left: 0px;
+                left: 10px;
             }
             #tile00_0, #tile01_0 {
                 width: 256px;
@@ -228,7 +228,7 @@
                 
             }
             function getTileURL(x, y, dateStr, hourOffset) {
-                return "http://www.metoffice.gov.uk/public/data/LayerCache/UKPPNOW/ItemBbox/Precipitation_Rate/" + x + "/" + y + "/9/png?RUN=" + dateStr + "&FORECAST=%2B" + hourOffset + "&styles=Bitmap+Blue-Pale+blue+gradient+0.01+to+greater+than+32mm%2Fhr";
+                return "//www.metoffice.gov.uk/public/data/LayerCache/UKPPNOW/ItemBbox/Precipitation_Rate/" + x + "/" + y + "/9/png?RUN=" + dateStr + "&FORECAST=%2B" + hourOffset + "&styles=Bitmap+Blue-Pale+blue+gradient+0.01+to+greater+than+32mm%2Fhr";
             }
             function earlierForecast() {
                 if (hourOffset > 0) {
@@ -254,7 +254,7 @@
             <img id="tile01_0" style="position: absolute; top: 128px; left: 32px;">
             
             <!-- coastline -->
-            <div id="tile00_1" style="position: absolute; top: -128px; left: 32px; background-image: url('http://www.metoffice.gov.uk/public/tiles/coast_new/9/250/165.png');"></div>
+            <div id="tile00_1" style="position: absolute; top: -128px; left: 32px; background-image: url('//www.metoffice.gov.uk/public/tiles/coast_new/9/250/165.png');"></div>
             <div id="tile01_1" style="position: absolute; top: 128px; left: 32px; background-image: url('../images/166_composite.png');"></div>
             
             <input id="laterButton" type="button" value="&gt;" onclick="laterForecast();">
