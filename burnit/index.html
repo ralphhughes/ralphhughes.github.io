@@ -11,32 +11,33 @@
                 background-size: cover;
                 color: #FFF;
             }
+
         </style>
         <script>
             function calc() {
                 /* From my ancient spreadsheet:
-                ="Works out as £" & IF(OR(ISBLANK(D7),ISBLANK(D10)),"-",ROUND(D10/D7, 2)) & "/kg and " & ROUND(D10*100/(D7*VLOOKUP(D4, G4:H30,2,0)),3) & "p/kWh."
-                */
+                 ="Works out as £" & IF(OR(ISBLANK(D7),ISBLANK(D10)),"-",ROUND(D10/D7, 2)) & "/kg and " & ROUND(D10*100/(D7*VLOOKUP(D4, G4:H30,2,0)),3) & "p/kWh."
+                 */
                 var calorificValue = document.getElementById('optFuel').value;
                 var weight = document.getElementById('txtWeight').value;
                 var price = document.getElementById('txtPrice').value;
-                
+
                 var totalEnergy = weight * calorificValue;
                 var pricePerKilo = price / weight;
-                var pricePerEnergy = price / totalEnergy; 
-                
-                alert('totalEnergy: ' + totalEnergy + "\npricePerKilo: " + pricePerKilo + "\nprice per kWh: " + pricePerEnergy);
+                var pricePerEnergy = price / totalEnergy;
+
+                alert('Total Energy: ' + Math.round(totalEnergy*10)/10 + "kWh\nPrice per Kilo: £" + pricePerKilo.toFixed(2) + "\nPrice per kWh: £" + pricePerEnergy.toFixed(2));
             }
         </script>
     </head>
     <body>
         <h1>Can I burn it?</h1>
         <div class="container text-center">
-            <div class="row">
+            <div class="row flex-wrap">
                 <div class="col">
                     <p>
-                        <select id="optFuel" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-                            <option selected>What ya got?</option>
+                        <select id="optFuel" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="width: 300px;">
+                            <option value="" selected="selected">Select fuel...</option>
                             <option value="11.53">Candle wax</option>
                             <option value="8.2">Charcoal</option>
                             <option value="9.2">Coal – anthracite</option>
@@ -51,14 +52,22 @@
                     </p>
                 </div>
                 <div class="col">
-                    <input id="txtWeight" type="text"/>
-                    <input id="txtPrice" type="text"/>
+                    <p>
+                        <input id="txtWeight" type="text" class="form-control form-control-lg" placeholder="Weight (kg)" style="width: 300px;"/>
+                    </p>
                 </div>
                 <div class="col">
-                    <button id="calc" onclick="calc()">Burn?</button>
+                    <p>
+                        <input id="txtPrice" type="text" class="form-control  form-control-lg" placeholder="Price (£)" style="width: 300px;"/>
+                    </p>
+                </div>
+                <div class="col">
+                    <p>
+                        <button type="button" id="calc" class="btn btn-light btn-lg" onclick="calc()">Burn?</button>
+                    </p>
                 </div>
             </div>
-            
+
             <footer class=""> 
                 <p class="text-center text-muted">&copy; 2022 Ralph Hughes</p>
             </footer>
