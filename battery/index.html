@@ -90,8 +90,9 @@
             if (voltage < batt_voltages[0]) return 0;
             if (voltage > batt_voltages[batt_voltages.length - 1]) return 100;
             for (let i = 0; i < batt_voltages.length; i++) {
-                if (batt_voltages[i] === voltage) return batt_percentages[i];
+                if (batt_voltages[i] === voltage) return batt_percentages[i]; // Exact result
                 if (voltage < batt_voltages[i]) {
+                    // Interpolate between values
                     let fraction = (voltage - batt_voltages[i - 1]) / (batt_voltages[i] - batt_voltages[i - 1]);
                     return batt_percentages[i - 1] + fraction * (batt_percentages[i] - batt_percentages[i - 1]);
                 }
@@ -122,7 +123,7 @@
         
         function updateChart() {
             let typeSelect = document.getElementById('batteryType').
-            var batteryType = typeSelect.options[typeSelect.selectedIndex].value;
+            let batteryType = typeSelect.options[typeSelect.selectedIndex].value;
             let voltage = parseFloat(document.getElementById('voltageInput').value);
             let soc = getBattPercent(batteryType, voltage);
             document.getElementById('socResult').innerText = `Estimated SoC: ${soc.toFixed(2)}%`;
