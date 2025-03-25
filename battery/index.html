@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Battery SoC Estimator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" as="font" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'><path d='M7 2v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-2V2H7zm0 4h10v14H7V6z'/></svg>">
     <style>
     /* General styling */
@@ -158,10 +158,6 @@
     }
 
 
-
-
-
-
     /* Footer */
     footer {
         margin-top: auto;
@@ -199,13 +195,13 @@
 <div class="container">
     <div class="input-form">
         <label>Select Battery Type:
-	<span class="help-icon" onclick="openModal()">❓</span>
-	</label>
+	        <span class="help-icon" onclick="openModal()">❓</span>
+	    </label>
 
 
         <select id="batteryType" onchange="updateChart()">
             <option value="lithium">Lithium-ion</option>
-	    <option value="2s_lithium">2S Lithium-ion</option>
+	        <option value="2s_lithium">2S Lithium-ion</option>
             <option value="nimh">NiMH</option>
             <option value="alkaline">Alkaline</option>
         </select>
@@ -214,7 +210,8 @@
         <input type="number" id="voltageInput" step="0.01" min="2.78" max="4.28">
 
         <button onclick="estimateSoC()">Estimate Charge</button>
-	<p id="socResult"></p>
+
+	    <p id="socResult"></p>
     </div>
 
     <div class="chart-container">
@@ -228,23 +225,23 @@
         <span class="close" onclick="closeModal()">&times;</span>
         <h3>Battery Type Information</h3>
 
-                <strong>Lithium-ion:</strong> Used in most modern rechargeable devices. Nominal 3.6V<br>
-                <strong>NiMH:</strong> Found in AA/AAA rechargeable batteries. Nominal 1.2V<br>
-                <strong>Alkaline:</strong> Common in disposable AA/AAA batteries. Nominal 1.5V when new
- </div>
+        <strong>Lithium-ion:</strong> Used in most modern rechargeable devices. Nominal 3.6V<br>
+        <strong>NiMH:</strong> Found in AA/AAA rechargeable batteries. Nominal 1.2V<br>
+        <strong>Alkaline:</strong> Common in disposable AA/AAA batteries. Nominal 1.5V when new
+    </div>
 </div>
 
 
 <footer>Made by Ralphius & ChatGPT, 2025</footer>
  
     <script>
-        const lithium_batt_percentages = [0, 0.4, 0.5, 0.7, 1, 1.3, 1.6, 2, 2.4, 3, 4.1, 6.2, 7.8, 9.6, 11.5, 13.3, 15.1, 17, 18.8, 20.7, 22.5, 24.4, 26.2, 28, 29.9, 31.7, 33.6, 35.4, 37.3, 39.1, 40.9, 42.8, 44.6, 46.5, 48.3, 50.2, 52, 53.8, 55.7, 57.5, 59.4, 61.2, 63.1, 64.9, 66.7, 68.6, 70.4, 72.3, 74.1, 76, 77.8, 79.6, 81.5, 83.3, 85.2, 87, 88.9, 90.7, 92.6, 94.4, 96.2, 98.1, 100];
-        const lithium_batt_voltages = [2.78, 2.86, 2.94, 3.01, 3.08, 3.17, 3.24, 3.31, 3.38, 3.45, 3.51, 3.57, 3.59, 3.61, 3.62, 3.63, 3.64, 3.66, 3.67, 3.68, 3.68, 3.69, 3.69, 3.7, 3.7, 3.71, 3.71, 3.71, 3.72, 3.72, 3.73, 3.73, 3.74, 3.75, 3.76, 3.77, 3.78, 3.79, 3.8, 3.81, 3.82, 3.84, 3.85, 3.87, 3.88, 3.9, 3.92, 3.94, 3.96, 3.98, 4, 4.02, 4.04, 4.06, 4.09, 4.11, 4.13, 4.15, 4.18, 4.2, 4.22, 4.25, 4.28];
+        const lithium_batt_percentages = [100, 98.1, 96.2, 94.4, 92.6, 90.7, 88.9, 87, 85.2, 83.3, 81.5, 79.6, 77.8, 76, 74.1, 72.3, 70.4, 68.6, 66.7, 64.9, 63.1, 61.2, 59.4, 57.5, 55.7, 53.8, 52, 50.2, 48.3, 46.5, 44.6, 42.8, 40.9, 39.1, 37.3, 35.4, 33.6, 31.7, 29.9, 28, 26.2, 24.4, 22.5, 20.7, 18.8, 17, 15.1, 13.3, 11.5, 9.6, 7.8, 6.2, 4.1, 3, 2.4, 2, 1.6, 1.3, 1, 0.7, 0.5, 0.4, 0];
+        const lithium_batt_voltages = [4.28, 4.25, 4.22, 4.2, 4.18, 4.15, 4.13, 4.11, 4.09, 4.06, 4.04, 4.02, 4, 3.98, 3.96, 3.94, 3.92, 3.9, 3.88, 3.87, 3.85, 3.84, 3.82, 3.81, 3.8, 3.79, 3.78, 3.77, 3.76, 3.75, 3.74, 3.73, 3.73, 3.72, 3.72, 3.71, 3.71, 3.71, 3.7, 3.7, 3.69, 3.69, 3.68, 3.68, 3.67, 3.66, 3.64, 3.63, 3.62, 3.61, 3.59, 3.57, 3.51, 3.45, 3.38, 3.31, 3.24, 3.17, 3.08, 3.01, 2.94, 2.86, 2.78];
 
-	let lithium_batt_voltages_2s = [];
-	for (let i=0; i < lithium_batt_voltages.length; i++) {
-	    lithium_batt_voltages_2s[i] = lithium_batt_voltages[i] * 2;
-	}
+        let lithium_batt_voltages_2s = [];
+        for (let i=0; i < lithium_batt_voltages.length; i++) {
+            lithium_batt_voltages_2s[i] = lithium_batt_voltages[i] * 2;
+        }
 
         const nimh_batt_percentages = [100, 96.2, 93.2, 90.1, 86.9, 83.8, 80.7, 77.6, 74.6, 71.6, 68.5, 65.5, 62.4, 59.4, 56.3, 53.2, 49.9, 46.6, 43.6, 40.6, 37.3, 34.4, 31.4, 28.3, 25.3, 22.1, 19.3, 16.2, 13.1, 10.1, 7.06, 4.46, 2.65, 1.58, 0.45, 0];
         const nimh_batt_voltages = [1.3, 1.26, 1.24, 1.227, 1.216, 1.212, 1.209, 1.208, 1.206, 1.205, 1.201, 1.2, 1.198, 1.196, 1.193, 1.188, 1.186, 1.186, 1.183, 1.18, 1.176, 1.17, 1.167, 1.163, 1.159, 1.155, 1.15, 1.142, 1.135, 1.121, 1.102, 1.085, 1.049, 1.018, 0.994, 0.957];
@@ -252,7 +249,7 @@
         const alkaline_batt_percentages = [100, 98.116, 96.517, 94.917, 93.318, 91.719, 90.119, 88.52, 86.92, 85.321, 83.722, 82.122, 80.523, 78.924, 77.324, 75.725, 74.126, 72.526, 70.927, 69.327, 67.728, 66.129, 64.529, 62.93, 61.331, 59.731, 58.132, 56.533, 54.933, 53.334, 51.734, 50.135, 48.536, 46.936, 45.337, 43.738, 42.138, 40.539, 38.94, 37.34, 35.741, 34.141, 32.542, 30.943, 29.343, 27.744, 26.145, 24.545, 22.946, 21.461, 19.747, 18.148, 16.548, 14.949, 13.35, 11.75, 10.151, 8.552, 6.952, 5.353, 3.754, 2.383, 1.583, 1.126, 0.898, 0.441, 0];
         const alkaline_batt_voltages = [1.55, 1.499, 1.465, 1.44, 1.422, 1.407, 1.394, 1.383, 1.373, 1.363, 1.358, 1.349, 1.339, 1.333, 1.326, 1.317, 1.309, 1.307, 1.299, 1.293, 1.285, 1.283, 1.28, 1.274, 1.267, 1.261, 1.257, 1.255, 1.25, 1.244, 1.238, 1.232, 1.232, 1.226, 1.221, 1.215, 1.209, 1.206, 1.203, 1.196, 1.19, 1.183, 1.177, 1.174, 1.165, 1.158, 1.15, 1.146, 1.138, 1.13, 1.123, 1.114, 1.1, 1.089, 1.073, 1.057, 1.043, 1.027, 1.011, 0.987, 0.959, 0.922, 0.87, 0.821, 0.767, 0.699, 0.6];
         
-       function getBattPercent(chemistry, voltage) {
+        function getBattPercent(chemistry, voltage) {
             switch (chemistry) {
                 case 'lithium':
                     return interpolateVoltages(voltage, lithium_batt_voltages, lithium_batt_percentages);
