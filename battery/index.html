@@ -194,7 +194,7 @@
 
 <div class="container">
     <div class="input-form">
-        <label>Select Battery Type:
+        <label for="batteryType">Select Battery Type:
 	        <span class="help-icon" onclick="openModal()">❓</span>
 	    </label>
 
@@ -206,7 +206,7 @@
             <option value="alkaline">Alkaline</option>
         </select>
 
-        <label>Enter Measured Voltage (V):</label>
+        <label for="voltageInput">Enter Measured Voltage (V):</label>
         <input type="number" id="voltageInput" step="0.01" min="2.78" max="4.28">
 
         <button onclick="estimateSoC()">Estimate Charge</button>
@@ -266,11 +266,11 @@
         }
 
         function interpolateVoltages(voltage, batt_voltages, batt_percentages) {
-            if (voltage < batt_voltages[0]) return 0;
-            if (voltage > batt_voltages[batt_voltages.length - 1]) return 100;
+            if (voltage > batt_voltages[0]) return 100;
+            if (voltage < batt_voltages[batt_voltages.length - 1]) return 0;
             for (let i = 0; i < batt_voltages.length; i++) {
                 if (batt_voltages[i] === voltage) return batt_percentages[i]; // Exact result
-                if (voltage < batt_voltages[i]) {
+                if (voltage > batt_voltages[i]) {
                     // Interpolate between values
                     let fraction = (voltage - batt_voltages[i - 1]) / (batt_voltages[i] - batt_voltages[i - 1]);
                     return batt_percentages[i - 1] + fraction * (batt_percentages[i] - batt_percentages[i - 1]);
