@@ -1,0 +1,1 @@
+html-minifier-terser --collapse-whitespace --remove-comments --minify-css true --minify-js true index.src.html -o index.html
