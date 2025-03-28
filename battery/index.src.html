@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Battery SoC Estimator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" as="font" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'><path d='M7 2v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-2V2H7zm0 4h10v14H7V6z'/></svg>">
     <style>
@@ -204,7 +203,7 @@
             </label>
 
 
-            <select id="batteryType" onchange="updateChart()">
+            <select id="batteryType" onchange="updateBatteryType()">
                 <option value="lithium">Lithium-ion</option>
                 <option value="2s_lithium">2S Lithium-ion</option>
                 <option value="nimh">NiMH</option>
@@ -212,7 +211,7 @@
             </select>
 
             <label for="voltageInput">Enter Measured Voltage (V):</label>
-            <input type="number" id="voltageInput" step="0.01" min="2.78" max="4.28">
+            <input type="number" id="voltageInput" step="0.01" min="0" max="20" onkeypress="handleKeyPress(event)">
 
             <button onclick="estimateSoC()">Estimate Charge</button>
 
@@ -282,32 +281,49 @@
                 }
             }
         }
-
         const ctx = document.getElementById('batteryChart').getContext('2d');
         let chart = new Chart(ctx, {
-            type: 'line',
+            type: 'scatter',
             data: {
                 labels: lithium_batt_percentages.map(p => Math.round(p)),
-                datasets: [{
-                    label: 'Voltage vs SoC',
-                    data: lithium_batt_voltages,
-                    borderColor: 'white',
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    fill: true,
-                }]
+                datasets: [
+                    {
+                        label: 'Voltage vs SoC',
+                        data: lithium_batt_voltages,
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        fill: true,
+                    },
+                    {
+                        label: 'Measured Point',
+                        data: [], // Initially empty
+                        borderColor: 'red',
+                        backgroundColor: 'red',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        showLine: false // Only show a point, no connecting line
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    x: { title: { display: true, text: 'SoC (%)' } },
+                    x: { reverse: true, title: { display: true, text: 'Charge (%)' } },
                     y: { title: { display: true, text: 'Voltage (V)' } }
                 }
             }
         });
 
 
-        function updateChart() {
+
+        function updateBatteryType() {
+            // If battery type has changed then clear the previous measured voltage and SoC estimate
+            document.getElementById('voltageInput').value = '';
+            chart.data.datasets[1].data = [];
+            document.getElementById('socResult').innerText = '';
+
+            // get new battery type
             let typeSelect = document.getElementById('batteryType');
             let batteryType = typeSelect.options[typeSelect.selectedIndex].value;
 
@@ -340,13 +356,31 @@
 
         }
 
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                estimateSoC();
+            }
+        }
 
         function estimateSoC() {
+            // Get input values
             let typeSelect = document.getElementById('batteryType');
             let batteryType = typeSelect.options[typeSelect.selectedIndex].value;
-            let voltage = parseFloat(document.getElementById('voltageInput').value);
+            let voltage = parseFloat(document.getElementById('voltageInput').value.trim());
+
+            // Check if the input is empty or not a valid number
+            if (voltage === "" || isNaN(voltage)) {
+                alert("Please enter a valid voltage before estimating SoC.");
+                return;
+            }
+
+            // Calculate and display result
             let soc = getBattPercent(batteryType, voltage);
             document.getElementById('socResult').innerText = `Estimated SoC: ${soc.toFixed(1)}%`;
+
+            // Update the chart with the new highlight point
+            chart.data.datasets[1].data = [{ x: Math.round(soc), y: voltage }];
+            chart.update();
         }
 
         function openModal() {
