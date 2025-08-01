@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery SoC Estimator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'><path d='M7 2v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-2V2H7zm0 4h10v14H7V6z'/></svg>">
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+        }
+
+        /* Container for input & chart */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        /* Input form */
+        .input-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        select {
+            padding: 10px 10px 10px 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        input {
+            padding: 10px 10px 10px 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            max-width: 100px;
+            text-align: center;
+
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #0072ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            max-width: 300px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #005bb5;
+        }
+
+        /* Chart styling */
+        .chart-container {
+            width: 95vw;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            /* Ensures square aspect ratio */
+            margin-top: 20px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+
+
+        /* Help icon style */
+        .help-icon {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 6px;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .help-icon:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Modal background */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Modal content */
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: left;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            color: black;
+        }
+
+        /* Close button */
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 10px;
+            font-size: 14px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+        }
+
+        /* Responsive layout: side-by-side on wider screens */
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                max-width: 900px;
+            }
+
+            .input-form {
+                width: 45%;
+            }
+
+            .chart-container {
+                width: 45%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Battery Charge Estimator <i class="fas fa-battery-full"></i></h2>
+
+    <div class="container">
+        <div class="input-form">
+            <label for="batteryType">Select Battery Type:
+                <span class="help-icon" onclick="openModal()">❓</span>
+            </label>
+
+
+            <select id="batteryType" onchange="updateBatteryType()">
+                <option value="lithium">Lithium-ion</option>
+                <option value="2s_lithium">2S Lithium-ion</option>
+                <option value="nimh">NiMH</option>
+                <option value="alkaline">Alkaline</option>
+            </select>
+
+            <label for="voltageInput">Enter Measured Voltage (V):</label>
+            <input type="number" id="voltageInput" step="0.01" min="0" max="20" onkeypress="handleKeyPress(event)">
+
+            <button onclick="estimateSoC()">Estimate Charge</button>
+
+            <p id="socResult"></p>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="batteryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="helpModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Battery Type Information</h3>
+
+            <strong>Lithium-ion:</strong> Used in most modern rechargeable devices. Nominal 3.6V<br>
+            <strong>NiMH:</strong> Found in AA/AAA rechargeable batteries. Nominal 1.2V<br>
+            <strong>Alkaline:</strong> Common in disposable AA/AAA batteries. Nominal 1.5V when new
+        </div>
+    </div>
+
+
+    <footer>Made by Ralphius & ChatGPT, 2025</footer>
+
+    <script>
+        const lithium_batt_percentages = [100, 98.1, 96.2, 94.4, 92.6, 90.7, 88.9, 87, 85.2, 83.3, 81.5, 79.6, 77.8, 76, 74.1, 72.3, 70.4, 68.6, 66.7, 64.9, 63.1, 61.2, 59.4, 57.5, 55.7, 53.8, 52, 50.2, 48.3, 46.5, 44.6, 42.8, 40.9, 39.1, 37.3, 35.4, 33.6, 31.7, 29.9, 28, 26.2, 24.4, 22.5, 20.7, 18.8, 17, 15.1, 13.3, 11.5, 9.6, 7.8, 6.2, 4.1, 3, 2.4, 2, 1.6, 1.3, 1, 0.7, 0.5, 0.4, 0];
+        const lithium_batt_voltages = [4.28, 4.25, 4.22, 4.2, 4.18, 4.15, 4.13, 4.11, 4.09, 4.06, 4.04, 4.02, 4, 3.98, 3.96, 3.94, 3.92, 3.9, 3.88, 3.87, 3.85, 3.84, 3.82, 3.81, 3.8, 3.79, 3.78, 3.77, 3.76, 3.75, 3.74, 3.73, 3.73, 3.72, 3.72, 3.71, 3.71, 3.71, 3.7, 3.7, 3.69, 3.69, 3.68, 3.68, 3.67, 3.66, 3.64, 3.63, 3.62, 3.61, 3.59, 3.57, 3.51, 3.45, 3.38, 3.31, 3.24, 3.17, 3.08, 3.01, 2.94, 2.86, 2.78];
+
+        let lithium_batt_voltages_2s = [];
+        for (let i = 0; i < lithium_batt_voltages.length; i++) {
+            lithium_batt_voltages_2s[i] = lithium_batt_voltages[i] * 2;
+        }
+
+        const nimh_batt_percentages = [100, 96.2, 93.2, 90.1, 86.9, 83.8, 80.7, 77.6, 74.6, 71.6, 68.5, 65.5, 62.4, 59.4, 56.3, 53.2, 49.9, 46.6, 43.6, 40.6, 37.3, 34.4, 31.4, 28.3, 25.3, 22.1, 19.3, 16.2, 13.1, 10.1, 7.06, 4.46, 2.65, 1.58, 0.45, 0];
+        const nimh_batt_voltages = [1.3, 1.26, 1.24, 1.227, 1.216, 1.212, 1.209, 1.208, 1.206, 1.205, 1.201, 1.2, 1.198, 1.196, 1.193, 1.188, 1.186, 1.186, 1.183, 1.18, 1.176, 1.17, 1.167, 1.163, 1.159, 1.155, 1.15, 1.142, 1.135, 1.121, 1.102, 1.085, 1.049, 1.018, 0.994, 0.957];
+
+        const alkaline_batt_percentages = [100, 98.116, 96.517, 94.917, 93.318, 91.719, 90.119, 88.52, 86.92, 85.321, 83.722, 82.122, 80.523, 78.924, 77.324, 75.725, 74.126, 72.526, 70.927, 69.327, 67.728, 66.129, 64.529, 62.93, 61.331, 59.731, 58.132, 56.533, 54.933, 53.334, 51.734, 50.135, 48.536, 46.936, 45.337, 43.738, 42.138, 40.539, 38.94, 37.34, 35.741, 34.141, 32.542, 30.943, 29.343, 27.744, 26.145, 24.545, 22.946, 21.461, 19.747, 18.148, 16.548, 14.949, 13.35, 11.75, 10.151, 8.552, 6.952, 5.353, 3.754, 2.383, 1.583, 1.126, 0.898, 0.441, 0];
+        const alkaline_batt_voltages = [1.55, 1.499, 1.465, 1.44, 1.422, 1.407, 1.394, 1.383, 1.373, 1.363, 1.358, 1.349, 1.339, 1.333, 1.326, 1.317, 1.309, 1.307, 1.299, 1.293, 1.285, 1.283, 1.28, 1.274, 1.267, 1.261, 1.257, 1.255, 1.25, 1.244, 1.238, 1.232, 1.232, 1.226, 1.221, 1.215, 1.209, 1.206, 1.203, 1.196, 1.19, 1.183, 1.177, 1.174, 1.165, 1.158, 1.15, 1.146, 1.138, 1.13, 1.123, 1.114, 1.1, 1.089, 1.073, 1.057, 1.043, 1.027, 1.011, 0.987, 0.959, 0.922, 0.87, 0.821, 0.767, 0.699, 0.6];
+
+        function getBattPercent(chemistry, voltage) {
+            switch (chemistry) {
+                case 'lithium':
+                    return interpolateVoltages(voltage, lithium_batt_voltages, lithium_batt_percentages);
+                case '2s_lithium':
+                    return interpolateVoltages(voltage, lithium_batt_voltages_2s, lithium_batt_percentages);
+                case 'nimh':
+                    return interpolateVoltages(voltage, nimh_batt_voltages, nimh_batt_percentages);
+                case 'alkaline':
+                    return interpolateVoltages(voltage, alkaline_batt_voltages, alkaline_batt_percentages);
+                default:
+                    console.error("Unknown battery type:", chemistry);
+                    return null; // Return null for invalid input
+            }
+        }
+
+        function interpolateVoltages(voltage, batt_voltages, batt_percentages) {
+            if (voltage > batt_voltages[0]) return 100;
+            if (voltage < batt_voltages[batt_voltages.length - 1]) return 0;
+            for (let i = 0; i < batt_voltages.length; i++) {
+                if (batt_voltages[i] === voltage) return batt_percentages[i]; // Exact result
+                if (voltage > batt_voltages[i]) {
+                    // Interpolate between values
+                    let fraction = (voltage - batt_voltages[i - 1]) / (batt_voltages[i] - batt_voltages[i - 1]);
+                    return batt_percentages[i - 1] + fraction * (batt_percentages[i] - batt_percentages[i - 1]);
+                }
+            }
+        }
+        const ctx = document.getElementById('batteryChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                labels: lithium_batt_percentages.map(p => Math.round(p)),
+                datasets: [
+                    {
+                        label: 'Voltage vs SoC',
+                        data: lithium_batt_voltages,
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        fill: true,
+                    },
+                    {
+                        label: 'Measured Point',
+                        data: [], // Initially empty
+                        borderColor: 'red',
+                        backgroundColor: 'red',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        showLine: false // Only show a point, no connecting line
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { reverse: true, title: { display: true, text: 'Charge (%)' } },
+                    y: { title: { display: true, text: 'Voltage (V)' } }
+                }
+            }
+        });
+
+
+
+        function updateBatteryType() {
+            // If battery type has changed then clear the previous measured voltage and SoC estimate
+            document.getElementById('voltageInput').value = '';
+            chart.data.datasets[1].data = [];
+            document.getElementById('socResult').innerText = '';
+
+            // get new battery type
+            let typeSelect = document.getElementById('batteryType');
+            let batteryType = typeSelect.options[typeSelect.selectedIndex].value;
+
+            let batt_voltages, batt_percentages;
+
+            // Select the correct data based on battery type
+            switch (batteryType) {
+                case 'lithium':
+                    batt_voltages = lithium_batt_voltages;
+                    batt_percentages = lithium_batt_percentages;
+                    break;
+                case '2s_lithium':
+                    batt_voltages = lithium_batt_voltages_2s;
+                    batt_percentages = lithium_batt_percentages;
+                    break;
+                case 'nimh':
+                    batt_voltages = nimh_batt_voltages;
+                    batt_percentages = nimh_batt_percentages;
+                    break;
+                case 'alkaline':
+                    batt_voltages = alkaline_batt_voltages;
+                    batt_percentages = alkaline_batt_percentages;
+                    break;
+            }
+
+            // Update chart dataset
+            chart.data.labels = batt_percentages.map(p => Math.round(p)); // Update x-axis labels
+            chart.data.datasets[0].data = batt_voltages; // Update y-axis data
+            chart.update(); // Refresh chart
+
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                estimateSoC();
+            }
+        }
+
+        function estimateSoC() {
+            // Get input values
+            let typeSelect = document.getElementById('batteryType');
+            let batteryType = typeSelect.options[typeSelect.selectedIndex].value;
+            let voltage = parseFloat(document.getElementById('voltageInput').value.trim());
+
+            // Check if the input is empty or not a valid number
+            if (voltage === "" || isNaN(voltage)) {
+                alert("Please enter a valid voltage before estimating SoC.");
+                return;
+            }
+
+            // Calculate and display result
+            let soc = getBattPercent(batteryType, voltage);
+            document.getElementById('socResult').innerText = `Estimated SoC: ${soc.toFixed(1)}%`;
+
+            // Update the chart with the new highlight point
+            chart.data.datasets[1].data = [{ x: Math.round(soc), y: voltage }];
+            chart.update();
+        }
+
+        function openModal() {
+            document.getElementById("helpModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("helpModal").style.display = "none";
+        }
+
+        // Close modal when clicking outside content
+        window.onclick = function (event) {
+            let modal = document.getElementById("helpModal");
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+
+    </script>
+</body>
+
+</html>
