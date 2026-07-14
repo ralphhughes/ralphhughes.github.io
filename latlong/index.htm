@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lat/Long Converter</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --panel: rgba(18, 24, 43, 0.86);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: #e8ecf7;
+      --muted: #aab4cf;
+      --accent: #7c9cff;
+      --accent-strong: #5d7ef4;
+      --error: #ff8a8a;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(124, 156, 255, 0.18), transparent 32%),
+        linear-gradient(160deg, #08101f 0%, #11192c 45%, #0a0f1b 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    main {
+      width: min(880px, 100%);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: clamp(18px, 4vw, 30px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0 0 22px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .input-wrap {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="text"]::placeholder { color: #8b95b3; }
+
+    input[type="text"]:focus {
+      border-color: rgba(124, 156, 255, 0.7);
+      box-shadow: 0 0 0 4px rgba(124, 156, 255, 0.16);
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 0 20px;
+      min-height: 54px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(93, 126, 244, 0.28);
+      transition: transform 0.15s ease, filter 0.15s ease;
+      flex: 0 0 auto;
+    }
+
+    button:hover { filter: brightness(1.03); }
+    button:active { transform: translateY(1px); }
+
+    .hint {
+      margin-top: 4px;
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .status {
+      margin: 0 0 14px;
+      min-height: 1.4em;
+      color: var(--error);
+      font-weight: 600;
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .result,
+    .map-card,
+    .uncertainty-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .result {
+      padding: 15px 16px;
+    }
+
+    .label {
+      display: block;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .value {
+      font-size: clamp(1.02rem, 2vw, 1.18rem);
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .map-card {
+      margin-top: 14px;
+      overflow: hidden;
+    }
+
+    .map-frame {
+      width: 100%;
+      height: min(44vw, 280px);
+      min-height: 240px;
+      background: linear-gradient(180deg, rgba(124, 156, 255, 0.14), rgba(255, 255, 255, 0.02));
+    }
+
+    .map-caption,
+    .uncertainty-body {
+      padding: 12px 16px 14px;
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
+
+    .uncertainty-card {
+      margin-top: 12px;
+    }
+
+    .leaflet-container {
+      background: #c8d8e8;
+    }
+
+    .leaflet-control-attribution {
+      font-size: 10px;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .card { border-radius: 20px; }
+      form { flex-direction: column; }
+      button { width: 100%; }
+      .map-frame { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card" aria-labelledby="title">
+      <h1 id="title">Lat/Long Converter</h1>
+      <p>Enter a latitude/longitude pair in decimal degrees, degrees and decimal minutes, or degrees minutes seconds. Press Enter or use Convert.</p>
+
+      <form id="converter-form" autocomplete="off" novalidate>
+        <div class="input-wrap">
+          <input id="coordinate-input" type="text" inputmode="text" placeholder="Example: 53.5 N, 3.677 W or 53° 00' 00\" N 3° 30' 00\" W" aria-label="Latitude and longitude input">
+          <div class="hint">Accepted: lat/long pairs in DD, DM or DMS, using commas, spaces and optional N/S/E/W.</div>
+        </div>
+        <button type="submit">Convert</button>
+      </form>
+
+      <div id="status" class="status" aria-live="polite"></div>
+      <div id="assumption" class="hint" aria-live="polite"></div>
+
+      <div class="results" aria-live="polite">
+        <div class="result">
+          <span class="label">Decimal degrees</span>
+          <div id="decimal-output" class="value empty">No result yet.</div>
+        </div>
+        <div class="result">
+          <span class="label">Degrees and decimal minutes</span>
+          <div id="dm-output" class="value empty">No result yet.</div>
+        </div>
+        <div class="result">
+          <span class="label">Degrees, minutes, seconds</span>
+          <div id="dms-output" class="value empty">No result yet.</div>
+        </div>
+      </div>
+
+      <div class="map-card">
+        <div id="map-preview" class="map-frame" aria-label="Location preview map"></div>
+        <div id="map-caption" class="map-caption">Map preview will appear here after a successful conversion.</div>
+      </div>
+
+      <div class="uncertainty-card">
+        <div class="uncertainty-body">
+          <span class="label">Uncertainty</span>
+          <div id="uncertainty-output" class="value empty">No uncertainty calculated yet.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+  <script src="latlong.js"></script>
+  <script>
+    const form = document.getElementById('converter-form');
+    const input = document.getElementById('coordinate-input');
+    const status = document.getElementById('status');
+    const assumption = document.getElementById('assumption');
+    const decimalOutput = document.getElementById('decimal-output');
+    const dmOutput = document.getElementById('dm-output');
+    const dmsOutput = document.getElementById('dms-output');
+    const mapCaption = document.getElementById('map-caption');
+    const uncertaintyOutput = document.getElementById('uncertainty-output');
+    const tools = createLatLongTools();
+
+    const map = L.map('map-preview', {
+      zoomControl: true,
+      attributionControl: true
+    }).setView([20, 0], 1);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const featureGroup = L.featureGroup().addTo(map);
+
+    function setOutputs(message) {
+      decimalOutput.textContent = message;
+      dmOutput.textContent = message;
+      dmsOutput.textContent = message;
+      decimalOutput.classList.toggle('empty', message === 'No result yet.');
+      dmOutput.classList.toggle('empty', message === 'No result yet.');
+      dmsOutput.classList.toggle('empty', message === 'No result yet.');
+    }
+
+    function setUncertainty(message, isEmpty) {
+      uncertaintyOutput.textContent = message;
+      uncertaintyOutput.classList.toggle('empty', isEmpty);
+    }
+
+    function resetMap() {
+      featureGroup.clearLayers();
+      map.setView([20, 0], 1);
+      mapCaption.textContent = 'Map preview will appear here after a successful conversion.';
+    }
+
+    function formatMetres(metres) {
+      if (metres >= 1000) {
+        return `${tools.trimTrailingZeros(metres / 1000, 2)} km`;
+      }
+      return `${Math.round(metres)} m`;
+    }
+
+    function updateMap(result) {
+      featureGroup.clearLayers();
+
+      const point = L.circleMarker([result.lat, result.lon], {
+        radius: 5,
+        color: '#ffffff',
+        weight: 2,
+        fillColor: '#7c9cff',
+        fillOpacity: 1
+      }).addTo(featureGroup);
+
+      const uncertaintyCircle = L.circle([result.lat, result.lon], {
+        radius: Math.max(1, result.uncertainty.radiusMetres),
+        color: '#7c9cff',
+        weight: 2,
+        opacity: 0.9,
+        fillColor: '#7c9cff',
+        fillOpacity: 0.16
+      }).addTo(featureGroup);
+
+      point.bindTooltip('Parsed coordinate');
+      uncertaintyCircle.bindTooltip('Uncertainty radius');
+
+      map.fitBounds(featureGroup.getBounds().pad(0.4));
+      mapCaption.textContent = `Map centred on ${Math.abs(result.lat).toFixed(4)}° ${result.lat < 0 ? 'S' : 'N'}, ${Math.abs(result.lon).toFixed(4)}° ${result.lon < 0 ? 'W' : 'E'}, with the circle showing the estimated uncertainty from the coarsest input precision.`;
+    }
+
+    function updateUncertainty(result) {
+      const uncertainty = result.uncertainty;
+      setUncertainty(
+        `Estimated uncertainty diameter: ${tools.trimTrailingZeros(uncertainty.diameterDegrees, 6)}°.` +
+        ` Latitude span: ${tools.trimTrailingZeros(uncertainty.latDegrees, 6)}°.` +
+        ` Longitude span: ${tools.trimTrailingZeros(uncertainty.lonDegrees, 6)}°.` +
+        ` Circle radius on map: about ${formatMetres(uncertainty.radiusMetres)}.` +
+        ` Approximate map diameter: ${formatMetres(uncertainty.diameterMetres)}.` +
+        ` ${uncertainty.detail}`,
+        false
+      );
+    }
+
+    function convert(event) {
+      event.preventDefault();
+
+      try {
+        const result = tools.parsePair(input.value);
+        status.textContent = '';
+        assumption.textContent = `Assumed input format: ${result.assumedFormat}. ${result.assumptionDetail}`;
+        decimalOutput.classList.remove('empty');
+        dmOutput.classList.remove('empty');
+        dmsOutput.classList.remove('empty');
+        decimalOutput.textContent = tools.formatDecimalPair(result);
+        dmOutput.textContent = tools.formatDMPair(result);
+        dmsOutput.textContent = tools.formatDMSPair(result);
+        updateMap(result);
+        updateUncertainty(result);
+      } catch (error) {
+        status.textContent = error.message;
+        assumption.textContent = '';
+        setOutputs('No result yet.');
+        setUncertainty('No uncertainty calculated yet.', true);
+        resetMap();
+      }
+    }
+
+    form.addEventListener('submit', convert);
+    setUncertainty('No uncertainty calculated yet.', true);
+    resetMap();
+  </script>
+</body>
+</html>
