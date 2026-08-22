@@ -9,8 +9,66 @@
         <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
         <script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
         <script>
+            var calculatorSettingsKey = 'washingMachineTimeCalcSettings';
+            var calculatorDefaults = {
+                offset: '00:00',
+                endTime: '17:00',
+                cycleTime: '02:50'
+            };
+
+            function isValidTimeValue(value, allowTomorrowOffset) {
+                if (!value || typeof value !== 'string') {
+                    return false;
+                }
+
+                var validTimePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+                if (allowTomorrowOffset) {
+                    return value === '00:00' || value === '24:00' || validTimePattern.test(value);
+                }
+
+                return validTimePattern.test(value);
+            }
+
+            function loadSavedSettings() {
+                var settings = calculatorDefaults;
+
+                try {
+                    var savedSettings = JSON.parse(localStorage.getItem(calculatorSettingsKey));
+                    if (savedSettings) {
+                        var mergedSettings = $.extend({}, calculatorDefaults, savedSettings);
+                        if (isValidTimeValue(mergedSettings.offset, true)
+                                && isValidTimeValue(mergedSettings.endTime, false)
+                                && isValidTimeValue(mergedSettings.cycleTime, false)) {
+                            settings = mergedSettings;
+                        }
+                    }
+                } catch (e) {
+                    settings = calculatorDefaults;
+                }
+
+                $('#offset').val(settings.offset).trigger('change');
+                $('#endTime').val(settings.endTime);
+                $('#cycleTime').val(settings.cycleTime);
+            }
+
+            function saveSettings() {
+                try {
+                    localStorage.setItem(calculatorSettingsKey, JSON.stringify({
+                        offset: $('#offset').val(),
+                        endTime: $('#endTime').val(),
+                        cycleTime: $('#cycleTime').val()
+                    }));
+                } catch (e) {
+                    // Ignore storage failures (private browsing, disabled storage, etc.)
+                }
+            }
+
             $(document).ready(function () { // DOM is ready so add my event handlers
+                loadSavedSettings();
+                $('#offset, #endTime, #cycleTime').on('change input', saveSettings);
+
                 $("#btnCalculate").click(function (e) {
+                    saveSettings();
                     updateTimeNow();
                     
                     // Read inputs
@@ -38,6 +96,7 @@
 
             $(window).load(function () { // Page is fully loaded
                 updateTimeNow();
+                loadSavedSettings();
 
                 // Find div id switch
                 // child div of above
