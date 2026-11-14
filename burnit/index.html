@@ -2,170 +2,352 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burn it?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f5f0">
+    <title>Can I burn it?</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-            body {
-                background-image: url("assets/fire-flames-background-public-domain.jpg");
-                background-size: cover;
-                color: #FFF;
-            }
+        :root {
+            color-scheme: light;
+            --ink: #25343c;
+            --muted: #64737a;
+            --paper: #f7f5f0;
+            --card: #fff;
+            --line: #e4e6e2;
+            --accent: #c54b37;
+            --accent-dark: #a63b2a;
+            --accent-pale: #fff1ec;
+            --green: #2f7258;
+        }
 
-        </style>
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 92% 4%, rgba(245, 215, 187, .38), transparent 28rem),
+                var(--paper);
+            color: var(--ink);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        .page-shell {
+            max-width: 920px;
+        }
+
+        .eyebrow {
+            color: var(--accent-dark);
+            font-size: .78rem;
+            font-weight: 750;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        h1, h2, h3 {
+            color: var(--ink);
+            letter-spacing: -.035em;
+        }
+
+        .intro {
+            max-width: 620px;
+            color: var(--muted);
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 1.15rem;
+            background: var(--card);
+            box-shadow: 0 16px 40px rgba(37, 52, 60, .055);
+        }
+
+        .form-label {
+            color: var(--ink);
+            font-size: .9rem;
+            font-weight: 650;
+        }
+
+        .form-control, .form-select {
+            min-height: 3rem;
+            border-color: #d7ddda;
+            border-radius: .7rem;
+            color: var(--ink);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 .22rem rgba(197, 75, 55, .15);
+        }
+
+        .btn-coral {
+            min-height: 3rem;
+            border: 0;
+            border-radius: .7rem;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .btn-coral:hover, .btn-coral:focus {
+            background: var(--accent-dark);
+            color: #fff;
+        }
+
+        .btn-compare {
+            min-height: 3rem;
+            border-radius: .7rem;
+            font-weight: 650;
+        }
+
+        .result-card {
+            height: 100%;
+            padding: 1.1rem;
+            border: 1px solid var(--line);
+            border-radius: .85rem;
+            background: #fcfcfa;
+        }
+
+        .result-card.primary-result {
+            border-color: #f0c2b6;
+            background: var(--accent-pale);
+        }
+
+        .result-label {
+            color: var(--muted);
+            font-size: .84rem;
+            font-weight: 600;
+        }
+
+        .result-value {
+            margin-top: .35rem;
+            color: var(--ink);
+            font-size: clamp(1.45rem, 4vw, 1.85rem);
+            font-weight: 750;
+            letter-spacing: -.04em;
+        }
+
+        .optional-tag {
+            display: inline-block;
+            margin-left: .35rem;
+            padding: .2rem .5rem;
+            border-radius: 99px;
+            background: #f0f2ef;
+            color: var(--muted);
+            font-size: .7rem;
+            font-weight: 650;
+            letter-spacing: 0;
+            vertical-align: .2em;
+        }
+
+        .comparison-message {
+            margin: 1rem 0 0;
+            padding: .85rem 1rem;
+            border-radius: .7rem;
+            background: #f1f6f2;
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .comparison-message.is-neutral {
+            background: #f4f5f3;
+            color: var(--muted);
+        }
+
+        .fine-print, footer {
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <main class="container page-shell py-5 py-lg-6">
+        <header class="mb-4 mb-lg-5">
+            <p class="eyebrow mb-2">Fuel cost calculator</p>
+            <h1 class="display-5 fw-bold mb-3">Can I burn it?</h1>
+            <p class="intro mb-0">Find out what your fuel costs per kilowatt-hour. Add a home-heating comparison only if it’s useful.</p>
+        </header>
+
+        <section class="panel p-4 p-md-5 mb-4" aria-labelledby="fuel-heading">
+            <h2 id="fuel-heading" class="h4 fw-bold mb-1">Your fuel</h2>
+            <p class="text-secondary mb-4">Choose a fuel, then enter how much you’re buying and its total price.</p>
+            <form id="fuelForm">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12">
+                        <label for="optFuel" class="form-label">Fuel type</label>
+                        <select id="optFuel" class="form-select" required>
+                            <option value="" selected disabled>Select fuel...</option>
+                            <option value="11.5">Candle wax (11.5 kWh/kg)</option>
+                            <option value="13.0">Beeswax (13.0 kWh/kg)</option>
+                            <option value="3.0">Cow poo - dried (3.0 kWh/kg)</option>
+                            <option value="3.0">Horse poo - dried (3.0 kWh/kg)</option>
+                            <option value="4.5">Hay - air-dry (4.5 kWh/kg)</option>
+                            <option value="3.5">Grass clippings - dried (3.5 kWh/kg)</option>
+                            <option value="7.5">Charcoal (7.5 kWh/kg)</option>
+                            <option value="9.5">Coal - anthracite (9.5 kWh/kg)</option>
+                            <option value="6.5">Coal - house/bituminous (6.5 kWh/kg)</option>
+                            <option value="4.1">Logs - softwood (20% mc, 4.1 kWh/kg)</option>
+                            <option value="4.5">Logs - hardwood (20% mc, 4.5 kWh/kg)</option>
+                            <option value="2.5">Logs - wet (45% mc, 2.5 kWh/kg)</option>
+                            <option value="4.2">Waste paper (4.2 kWh/kg)</option>
+                            <option value="3.8">Waste wood (3.8 kWh/kg)</option>
+                            <option value="4.5">Waste cotton (4.5 kWh/kg)</option>
+                            <option value="3.8">Sawdust (3.8 kWh/kg)</option>
+                            <option value="5.3">Wood pellets (6mm, 10% mc, 5.3 kWh/kg)</option>
+                            <option value="3.5">Woodchip (20% mc, 3.5 kWh/kg)</option>
+                            <option value="11.8">Diesel (11.8 kWh/kg)</option>
+                            <option value="7.8">Ethanol (7.8 kWh/kg)</option>
+                            <option value="5.5">Methanol (5.5 kWh/kg)</option>
+                            <option value="11.0">Paraffin / lamp oil (11.0 kWh/kg)</option>
+                            <option value="11.8">Heating oil (11.8 kWh/kg)</option>
+                            <option value="11.5">Waste vegetable oil (11.5 kWh/kg)</option>
+                            <option value="10.0">Waste fish oils (10.0 kWh/kg)</option>
+                            <option value="9.5">Tallow / animal fat (9.5 kWh/kg)</option>
+                            <option value="10.5">Bitumen / tar (10.5 kWh/kg)</option>
+                            <option value="4.0">Corrugated cardboard (4.0 kWh/kg)</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="txtWeight" class="form-label">Weight (kg)</label>
+                        <input id="txtWeight" type="number" step="any" min="0" class="form-control" placeholder="e.g. 10" required>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="txtPrice" class="form-label">Total price (£)</label>
+                        <input id="txtPrice" type="number" step="any" min="0" class="form-control" placeholder="e.g. 15" required>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <button type="submit" class="btn btn-coral w-100">Calculate cost</button>
+                    </div>
+                </div>
+            </form>
+
+            <div id="results" class="mt-5" aria-live="polite" hidden>
+                <h3 class="h5 fw-bold mb-3">Your fuel cost</h3>
+                <div class="row g-3">
+                    <div class="col-12 col-sm-4">
+                        <div class="result-card primary-result">
+                            <div class="result-label">Price per kWh</div>
+                            <div id="pricePerKWh" class="result-value"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-4">
+                        <div class="result-card">
+                            <div class="result-label">Total energy</div>
+                            <div id="totalEnergy" class="result-value"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-4">
+                        <div class="result-card">
+                            <div class="result-label">Price per kg</div>
+                            <div id="pricePerKilo" class="result-value"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="panel p-4 p-md-5 mb-4" aria-labelledby="comparison-heading" hidden>
+            <p class="eyebrow mb-2">Optional</p>
+            <h2 id="comparison-heading" class="h4 fw-bold mb-2">Compare with home heating <span class="optional-tag">not required</span></h2>
+            <p class="text-secondary mb-4">Your price per kWh is already calculated above. Choose a heating type below if you’d like a rough cost comparison.</p>
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-8">
+                    <label for="optHeating" class="form-label">Home heating type</label>
+                    <select id="optHeating" class="form-select">
+                        <option value="" selected>Select a heating type...</option>
+                        <option value="electric_radiant">Electric radiant panel</option>
+                        <option value="electric_storage">Electric storage heaters</option>
+                        <option value="gas_boiler">Gas boiler</option>
+                        <option value="gas_combi">Gas condensing combi boiler</option>
+                        <option value="oil_boiler">Oil boiler</option>
+                        <option value="heat_pump">Heat pump</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <button id="btnCompare" type="button" class="btn btn-outline-secondary btn-compare w-100">Compare costs</button>
+                </div>
+            </div>
+            <p id="compareOutput" class="comparison-message is-neutral" role="status" hidden></p>
+        </section>
+
+        <p class="fine-print px-1">Fuel costs are based on the energy content shown. Actual useful heat and heating costs vary by appliance efficiency and tariff.</p>
+        <footer class="pt-4 text-center">&copy; 2022 Ralph Hughes</footer>
+    </main>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calcBtn = document.getElementById('btnCalculate');
-            calcBtn.addEventListener('click', function() {
-                calc();
-                // Move to Stage 2 after calculation
-                document.getElementById('stage1').style.display = 'none';
-                document.getElementById('stage2').style.display = '';
-            });
-            document.getElementById('btnCompare').addEventListener('click', compareHeating);
+        let currentPricePerKWh = null;
+        const weightInput = document.getElementById('txtWeight');
+
+        weightInput.addEventListener('input', function() {
+            weightInput.setCustomValidity('');
         });
 
-        function calc() {
-            const sel = document.getElementById('optFuel');
-            const calorificValue = parseFloat(sel.value);
-            const weight = parseFloat(document.getElementById('txtWeight').value);
-            const price = parseFloat(document.getElementById('txtPrice').value);
+        document.getElementById('fuelForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-            if (isNaN(calorificValue) || isNaN(weight) || isNaN(price) || weight <= 0) {
-                alert('Please select a fuel and enter valid numeric values for weight and price.');
+            const calorificValue = Number(document.getElementById('optFuel').value);
+            const weight = Number(weightInput.value);
+            const price = Number(document.getElementById('txtPrice').value);
+
+            if (weight <= 0) {
+                weightInput.setCustomValidity('Weight must be greater than zero.');
+                weightInput.reportValidity();
+                return;
+            }
+
+            if (!Number.isFinite(calorificValue) || calorificValue <= 0 ||
+                !Number.isFinite(weight) ||
+                !Number.isFinite(price) || price < 0) {
                 return;
             }
 
             const totalEnergy = weight * calorificValue;
             const pricePerKilo = price / weight;
             const pricePerKWh = price / totalEnergy;
+            currentPricePerKWh = pricePerKWh;
 
-            // Store for comparison in Stage 2
-            window.burnit_pricePerKWh = pricePerKWh;
+            document.getElementById('pricePerKWh').textContent = `£${pricePerKWh.toFixed(3)}`;
+            document.getElementById('totalEnergy').textContent = `${totalEnergy.toFixed(1)} kWh`;
+            document.getElementById('pricePerKilo').textContent = `£${pricePerKilo.toFixed(2)}`;
+            document.getElementById('results').hidden = false;
+            document.getElementById('comparison').hidden = false;
+            document.getElementById('compareOutput').hidden = true;
+        });
 
-            const result = [];
-            result.push(`Total energy: ${totalEnergy.toFixed(1)} kWh`);
-            result.push(`Price per kg: £${pricePerKilo.toFixed(2)}`);
-            result.push(`Price per kWh: £${pricePerKWh.toFixed(3)}`);
-
-            document.getElementById('output').textContent = result.join(' | ');
-        }
-
-        function compareHeating() {
+        document.getElementById('btnCompare').addEventListener('click', function() {
             const heatingType = document.getElementById('optHeating').value;
-            const pricePerKWh = window.burnit_pricePerKWh;
-            // Example average UK prices (2025, adjust as needed)
             const heatingPrices = {
-                "electric_radiant": 0.30,
-                "electric_storage": 0.20,
-                "gas_boiler": 0.10,
-                "gas_combi": 0.09,
-                "oil_boiler": 0.12,
-                "heat_pump": 0.08
+                electric_radiant: 0.30,
+                electric_storage: 0.20,
+                gas_boiler: 0.10,
+                gas_combi: 0.09,
+                oil_boiler: 0.12,
+                heat_pump: 0.08
             };
-            if (!heatingType || !heatingPrices[heatingType]) {
-                document.getElementById('compareOutput').textContent = "Please select a valid heating type.";
+            const output = document.getElementById('compareOutput');
+
+            if (currentPricePerKWh === null ||
+                !heatingType || !Object.prototype.hasOwnProperty.call(heatingPrices, heatingType)) {
+                output.textContent = 'Choose a home heating type to compare costs.';
+                output.classList.add('is-neutral');
+                output.hidden = false;
                 return;
             }
-            const normalPrice = heatingPrices[heatingType];
-            let msg = `Your fuel: £${pricePerKWh.toFixed(3)}/kWh | Normal heating: £${normalPrice.toFixed(2)}/kWh. `;
-            if (pricePerKWh < normalPrice) {
-                msg += "Burning this is cheaper!";
-            } else if (pricePerKWh > normalPrice) {
-                msg += "Your normal heating is cheaper.";
+
+            const heatingPrice = heatingPrices[heatingType];
+            let message = `Your fuel: £${currentPricePerKWh.toFixed(3)}/kWh. Home heating: £${heatingPrice.toFixed(2)}/kWh. `;
+            if (currentPricePerKWh < heatingPrice) {
+                message += 'Your fuel is lower in cost per kWh.';
+            } else if (currentPricePerKWh > heatingPrice) {
+                message += 'Your home heating is lower in cost per kWh.';
             } else {
-                msg += "Both cost the same per kWh.";
+                message += 'Both cost the same per kWh.';
             }
-            document.getElementById('compareOutput').textContent = msg;
-        }
+
+            output.textContent = message;
+            output.classList.remove('is-neutral');
+            output.hidden = false;
+        });
     </script>
-</head>
-<body>
-    <div class="container py-5">
-        <h1 class="mb-4">Can I burn it?</h1>
-        <!-- Stage 1 -->
-        <div id="stage1">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="optFuel" class="form-label">Select fuel</label>
-                    <select id="optFuel" class="form-select">
-                        <option value="" selected>Select fuel...</option>
-                        <option value="11.5">Candle wax (11.5 kWh/kg)</option>
-                        <option value="13.0">Beeswax (13.0 kWh/kg)</option>
-                        <option value="3.0">Cow poo - dried (3.0 kWh/kg)</option>
-                        <option value="3.0">Horse poo - dried (3.0 kWh/kg)</option>
-                        <option value="4.5">Hay - air-dry (4.5 kWh/kg)</option>
-                        <option value="3.5">Grass clippings - dried (3.5 kWh/kg)</option>
-                        <option value="7.5">Charcoal (7.5 kWh/kg)</option>
-                        <option value="9.5">Coal - anthracite (9.5 kWh/kg)</option>
-                        <option value="6.5">Coal - house/bituminous (6.5 kWh/kg)</option>
-                        <option value="4.1">Logs - softwood (20% mc, 4.1 kWh/kg)</option>
-                        <option value="4.5">Logs - hardwood (20% mc, 4.5 kWh/kg)</option>
-                        <option value="2.5">Logs - wet (45% mc, 2.5 kWh/kg)</option>
-                        <option value="4.2">Waste paper (4.2 kWh/kg)</option>
-                        <option value="3.8">Waste wood (3.8 kWh/kg)</option>
-                        <option value="4.5">Waste cotton (4.5 kWh/kg)</option>
-                        <option value="3.8">Sawdust (3.8 kWh/kg)</option>
-                        <option value="5.3">Wood pellets (6mm, 10% mc, 5.3 kWh/kg)</option>
-                        <option value="3.5">Woodchip (20% mc, 3.5 kWh/kg)</option>
-                        <option value="11.8">Diesel (11.8 kWh/kg)</option>
-                        <option value="7.8">Ethanol (7.8 kWh/kg)</option>
-                        <option value="5.5">Methanol (5.5 kWh/kg)</option>
-                        <option value="11.0">Paraffin / lamp oil (11.0 kWh/kg)</option>
-                        <option value="11.8">Heating oil (11.8 kWh/kg)</option>
-                        <option value="11.5">Waste vegetable oil (11.5 kWh/kg)</option>
-                        <option value="10.0">Waste fish oils (10.0 kWh/kg)</option>
-                        <option value="9.5">Tallow / animal fat (9.5 kWh/kg)</option>
-                        <option value="10.5">Bitumen / tar (10.5 kWh/kg)</option>
-                        <option value="4.0">Corrugated cardboard (4.0 kWh/kg)</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="txtWeight" class="form-label">Weight (kg)</label>
-                    <input id="txtWeight" type="number" step="any" class="form-control" placeholder="e.g. 10" />
-                </div>
-                <div class="col-md-3">
-                    <label for="txtPrice" class="form-label">Price (£)</label>
-                    <input id="txtPrice" type="number" step="any" class="form-control" placeholder="e.g. 15" />
-                </div>
-                <div class="col-md-2">
-                    <button id="btnCalculate" class="btn btn-primary w-100">Calculate</button>
-                </div>
-            </div>
-            <div class="mt-4">
-                <h4>Results:</h4>
-                <p id="output" class="fs-5 text-monospace"></p>
-            </div>
-        </div>
-        <!-- Stage 2 -->
-        <div id="stage2" style="display:none;">
-            <h2 class="mb-3">Is it cheaper than my normal heating?</h2>
-            <div class="row g-3 align-items-end">
-                <div class="col-md-6">
-                    <label for="optHeating" class="form-label">Primary House Heating</label>
-                    <select id="optHeating" class="form-select">
-                        <option value="" selected>None</option>
-                        <option value="electric_radiant">Electric radiant panel</option>
-                        <option value="electric_storage">Electric storage heaters</option>
-                        <option value="gas_boiler">Gas Boiler</option>
-                        <option value="gas_combi">Gas Condensing Combi Boiler</option>
-                        <option value="oil_boiler">Oil Boiler</option>
-                        <option value="heat_pump">Heat Pump</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <button id="btnCompare" class="btn btn-success w-100">Compare</button>
-                </div>
-            </div>
-            <div class="mt-4">
-                <h4>Comparison Result:</h4>
-                <p id="compareOutput" class="fs-5 text-monospace"></p>
-            </div>
-        </div>
-        <footer class=""> 
-            <p class="text-center text-muted">&copy; 2022 Ralph Hughes</p>
-        </footer>
-    </div>
 </body>
 </html>
